@@ -1,0 +1,20 @@
+#main-container {
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #212121;
+}
+
+#left-side {
+  width: 13%;
+  height: 100%;
+  border-right: #2f2f2f solid 1px;
+  background-color: #171717;
+}
+
+#right-side {
+  flex-grow: 1;
+  height: 100%;
+  flex-wrap: 1;
+}
