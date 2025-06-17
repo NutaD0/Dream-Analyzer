@@ -29,6 +29,9 @@
 
 .react-calendar__navigation {
   margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .react-calendar__navigation button {
@@ -37,7 +40,10 @@
   font-weight: bold;
   font-size: 1rem;
   padding: 0.75rem 0.5rem;
+  min-width: 44px;
+  white-space: nowrap;
 }
+
 .react-calendar__navigation button:hover {
   background-color: #353535;
   border-radius: 0.375rem;
@@ -48,4 +54,62 @@
   text-transform: uppercase;
   font-size: 0.75rem;
   color: #9ca3af;
+}
+
+/* Медиа-запросы для очень маленьких экранов */
+@media screen and (max-width: 360px) {
+  .react-calendar {
+    width: 100% !important;
+    padding: 0.5rem !important;
+  }
+
+  .react-calendar__tile {
+    padding: 0.25rem !important;
+    font-size: 0.75rem !important;
+  }
+
+  .react-calendar__navigation button {
+    font-size: 0.875rem !important;
+    padding: 0.5rem 0.25rem !important;
+    min-width: 36px !important;
+  }
+
+  .react-calendar__month-view__weekdays {
+    font-size: 0.625rem !important;
+  }
+
+  .react-calendar__month-view__weekdays__weekday {
+    padding: 0.25rem !important;
+  }
+}
+
+/* Медиа-запросы для мобильных устройств */
+@media screen and (min-width: 361px) and (max-width: 768px) {
+  .react-calendar {
+    width: 100% !important;
+    padding: 0.75rem !important;
+  }
+
+  .react-calendar__tile {
+    padding: 0.5rem !important;
+    font-size: 0.875rem !important;
+  }
+
+  .react-calendar__navigation button {
+    font-size: 0.875rem !important;
+    padding: 0.5rem !important;
+    min-width: 40px !important;
+  }
+}
+
+/* Медиа-запросы для планшетов */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  .react-calendar {
+    width: 90% !important;
+    padding: 1rem !important;
+  }
+
+  .react-calendar__navigation button {
+    min-width: 44px !important;
+  }
 }

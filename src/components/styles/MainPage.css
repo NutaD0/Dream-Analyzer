@@ -15,6 +15,57 @@
 
 #right-side {
   flex-grow: 1;
+  width: 100%;
   height: 100%;
   flex-wrap: 1;
+}
+
+@import "tailwindcss";
+
+/* Медиа-запросы для мобильных устройств */
+@media screen and (max-width: 768px) {
+  #main-container {
+    flex-direction: row !important;
+  }
+
+  #left-side {
+    width: 20% !important;
+    min-width: 100px !important;
+  }
+
+  #right-side {
+    width: 65% !important;
+  }
+}
+
+/* Медиа-запросы для планшетов */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #main-container {
+    flex-direction: row !important;
+  }
+
+  #left-side {
+    width: 25% !important;
+    min-width: 250px !important;
+  }
+
+  #right-side {
+    width: 75% !important;
+  }
+}
+
+/* Медиа-запросы для больших экранов */
+@media screen and (min-width: 1025px) {
+  #main-container {
+    flex-direction: row !important;
+  }
+
+  #left-side {
+    width: 13% !important;
+    min-width: 100px !important;
+  }
+
+  #right-side {
+    width: 80% !important;
+  }
 }

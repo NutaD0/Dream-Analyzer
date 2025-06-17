@@ -1,1 +1,56 @@
 @import "tailwindcss";
+
+/* Медиа-запросы для мобильных устройств */
+@media screen and (max-width: 768px) {
+  #chat-messages {
+    width: 95% !important;
+    min-width: unset !important;
+  }
+
+  #input-place {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #input-bar {
+    padding: 0 10px 20px 10px;
+  }
+
+  .chat-message {
+    max-width: 85% !important;
+    font-size: 14px;
+  }
+
+  .chat-message h3 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+
+  .chat-message h4 {
+    font-size: 16px;
+    margin-bottom: 6px;
+  }
+
+  .chat-message ul,
+  .chat-message ol {
+    padding-left: 20px;
+    margin-bottom: 8px;
+  }
+
+  #input-button {
+    min-width: 100px;
+    padding: 12px;
+    font-size: 14px;
+  }
+}
+
+/* Медиа-запросы для планшетов */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+  #chat-messages {
+    width: 80% !important;
+  }
+
+  #input-place {
+    width: 600px !important;
+  }
+}
