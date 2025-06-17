@@ -1,69 +1,108 @@
 import { useState, useRef, useEffect } from "react";
 import "./styles/RightSideBar.css";
 
+const API_URL = "http://localhost:3001/api";
+
 function RightSideBar() {
   const [inputValue, setValue] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [messages, setMessages] = useState([]);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const chatContainerRef = useRef(null);
-  const [isInputDisabled, setIsInputDisabled] = useState(false);
+  const [userId, setUserId] = useState(null);
 
-  // Загружаем сообщения из localStorage при монтировании
+  // Загружаем userId из localStorage при монтировании
   useEffect(() => {
-    const savedMessages = localStorage.getItem("chatMessages");
-    console.log("Loaded messages from localStorage:", savedMessages);
-    if (savedMessages) {
-      setMessages(JSON.parse(savedMessages));
-      setShowWelcome(false);
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      setUserId(storedUserId);
+      // Загружаем историю сообщений
+      fetchChatHistory(storedUserId);
     }
   }, []);
+
+  const fetchChatHistory = async (userId) => {
+    try {
+      const response = await fetch(`${API_URL}/chat/history/${userId}`);
+      const data = await response.json();
+      if (data.success) {
+        setMessages(
+          data.messages.map((msg) => ({
+            text: msg.message,
+            sender: msg.is_bot ? "bot" : "user",
+          }))
+        );
+        setShowWelcome(false);
+      }
+    } catch (error) {
+      console.error("Ошибка при загрузке истории:", error);
+    }
+  };
 
   const handleChange = (event) => {
     setValue(event.target.value);
   };
 
-  const onClickSendButton = () => {
+  const onClickSendButton = async () => {
+    if (!userId) {
+      setErrorMessage("Ошибка: пользователь не авторизован");
+      return;
+    }
+
     if (inputValue.trim() === "") {
-      setErrorMessage("You should type anything!");
+      setErrorMessage("Вы должны что-то написать!");
       setValue("");
-    } else {
+      return;
+    }
+
+    setIsLoading(true);
+    setErrorMessage("");
+
+    try {
+      // Добавляем сообщение пользователя
       const newMessages = [...messages, { text: inputValue, sender: "user" }];
-
-      setIsInputDisabled(true);
-
-      setTimeout(() => {
-        //задержка сообщений
-        setMessages(newMessages);
-      }, 500);
+      setMessages(newMessages);
       setValue("");
-      setErrorMessage("");
       setShowWelcome(false);
 
-      setTimeout(() => {
+      // Отправляем сообщение на сервер
+      const response = await fetch(`${API_URL}/chat`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          message: inputValue,
+          userId: userId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Добавляем ответ бота
         setMessages((prevMessages) => [
           ...prevMessages,
-          { text: "This is a bot response!", sender: "bot" },
+          { text: data.response, sender: "bot" },
         ]);
-        setIsInputDisabled(false);
-      }, 1000);
+      } else {
+        setErrorMessage(data.error || "Ошибка при получении ответа");
+      }
+    } catch (error) {
+      console.error("Ошибка при отправке сообщения:", error);
+      setErrorMessage("Ошибка при отправке сообщения. Попробуйте позже.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleKeyDown = (event) => {
-    if (event.key === "Enter") {
+    if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       onClickSendButton();
     }
   };
-
-  // Сохраняем сообщения в localStorage при каждом изменении
-  useEffect(() => {
-    if (messages.length > 0) {
-      console.log("Saving messages to localStorage:", messages);
-      localStorage.setItem("chatMessages", JSON.stringify(messages));
-    }
-  }, [messages]);
 
   useEffect(() => {
     chatContainerRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -78,7 +117,7 @@ function RightSideBar() {
               id="welcome-text"
               className="text-[3rem] m-auto text-white mt-90"
             >
-              <h1>Let's talk about your dreams...</h1>
+              <h1>Давайте поговорим о ваших снах...</h1>
             </div>
           )}
           {messages.map((msg, index) => (
@@ -86,8 +125,8 @@ function RightSideBar() {
               key={index}
               className={`chat-message px-4 py-2 my-2 max-w-[70%] rounded-xl ${
                 msg.sender === "user"
-                  ? "bg-blue-500 text-white self-end rounded-br-none p-2"
-                  : "bg-gray-200 text-black self-start rounded-bl-none p-2"
+                  ? "bg-neutral-700 text-white self-end rounded-br-none p-2"
+                  : "bg-neutral-600 text-white self-start rounded-bl-none p-2"
               } break-words`}
             >
               {msg.text}
@@ -102,10 +141,10 @@ function RightSideBar() {
       >
         <div className="flex items-center gap-4 m-auto">
           <input
-            disabled={isInputDisabled}
+            disabled={isLoading}
             id="input-place"
             type="text"
-            placeholder="Send me your dream"
+            placeholder="Напишите о своем сне..."
             value={inputValue}
             onChange={handleChange}
             onKeyDown={handleKeyDown}
@@ -115,9 +154,10 @@ function RightSideBar() {
           <button
             id="input-button"
             onClick={onClickSendButton}
-            className="bg-neutral-700 text-white p-4 rounded-md transition duration-200 hover:bg-emerald-500 hover:text-black"
+            disabled={isLoading}
+            className="bg-neutral-700 text-white p-4 rounded-md transition duration-200 hover:bg-emerald-500 hover:text-black disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Send
+            {isLoading ? "Отправка..." : "Отправить"}
           </button>
         </div>
         <div>

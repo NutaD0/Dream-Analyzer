@@ -3,6 +3,8 @@ import InputField from "./InputField";
 import { useNavigate } from "react-router-dom";
 import "./styles/Authform.css";
 
+const API_URL = "http://localhost:3001/api";
+
 const AuthForm = () => {
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
@@ -10,29 +12,59 @@ const AuthForm = () => {
     password: "",
     confirmPassword: "",
   });
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
 
     if (!isLogin && formData.password !== formData.confirmPassword) {
-      alert("Пароли не совпадают!");
+      setError("Пароли не совпадают!");
+      setIsLoading(false);
       return;
     }
 
-    const dataToSend = {
-      username: formData.username,
-      password: formData.password,
-    };
+    try {
+      const endpoint = isLogin ? "/login" : "/register";
+      const response = await fetch(`${API_URL}${endpoint}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
 
-    console.log("Отправка данных:", dataToSend);
+      const data = await response.json();
 
-    navigate("/mainpage");
+      if (data.success) {
+        if (isLogin) {
+          localStorage.setItem("userId", data.userId);
+          navigate("/mainpage");
+        } else {
+          setIsLogin(true);
+          setError("Регистрация успешна! Теперь вы можете войти.");
+        }
+      } else {
+        setError(data.error || "Произошла ошибка");
+      }
+    } catch (err) {
+      setError("Не удалось подключиться к серверу");
+      console.error(err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -44,14 +76,16 @@ const AuthForm = () => {
         <h2 className="text-white mb-[25px] text-[1.5rem] text-center">
           {isLogin ? "Вход" : "Регистрация"}
         </h2>
+        {error && <div className="text-red-500 mb-4 text-sm">{error}</div>}
         <form onSubmit={handleSubmit} className="h-full">
           <div></div>
           <InputField
-            type="username"
+            type="text"
             name="username"
             placeholder="Введите логин"
             value={formData.username}
             onChange={handleChange}
+            disabled={isLoading}
           />
           <InputField
             type="password"
@@ -59,6 +93,7 @@ const AuthForm = () => {
             placeholder="Введите пароль"
             value={formData.password}
             onChange={handleChange}
+            disabled={isLoading}
           />
           {!isLogin && (
             <InputField
@@ -67,18 +102,27 @@ const AuthForm = () => {
               placeholder="Подтвердите пароль"
               value={formData.confirmPassword}
               onChange={handleChange}
+              disabled={isLoading}
             />
           )}
           <button
             type="submit"
-            className="w-68 p-[10px] bg-emerald-500 hover:bg-emerald-600 border-none text-white text-[16px] rounded-[6px] cursor-pointer transition duration-300"
+            className="w-68 p-[10px] bg-emerald-500 hover:bg-emerald-600 border-none text-white text-[16px] rounded-[6px] cursor-pointer transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
           >
-            {isLogin ? "Войти" : "Зарегистрироваться"}
+            {isLoading
+              ? "Загрузка..."
+              : isLogin
+              ? "Войти"
+              : "Зарегистрироваться"}
           </button>
         </form>
         <p
           className="text-neutral-400 cursor-pointer mt-[25px] text-[14px] hover:underline"
-          onClick={() => setIsLogin(!isLogin)}
+          onClick={() => {
+            setIsLogin(!isLogin);
+            setError("");
+          }}
         >
           {isLogin
             ? "Нет аккаунта? Зарегистрируйтесь"
